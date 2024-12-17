@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/generateToken.js";
+import { deleteMedia, uploadMedia } from "../utils/cloudinary.js";
 
 export const register = async (req, res) => {
   try {
@@ -118,7 +119,7 @@ export const updateProfile = async (req, res) => {
   try {
     const userId = req.id;
     const { name } = req.body;
-    const image = req.file;
+    const profileImage = req.file;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -128,7 +129,24 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    const updated = { name, profilePicture };
+    if (user.profilePicture) {
+      const publicId = user.profilePicture.split("/").pop().split(".")[0];
+      deleteMedia(publicId);
+    }
+
+    const cloudResponse = await uploadMedia(profileImage.path);
+    const profilePicture = cloudResponse.secure_url;
+
+    const updateData = { name, profilePicture };
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    }).select("-password");
+
+    return res.status(200).json({
+      success: true,
+      user: updatedUser,
+      message: "Profile updated successfully.",
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
