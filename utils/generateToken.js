@@ -5,6 +5,20 @@ export const generateToken = (res, user, message) => {
     expiresIn: "1d",
   });
 
+  // Create a new user object without sensitive fields
+  const userWithoutSensitiveInfo = { ...user._doc };
+  const fieldsToRemove = [
+    "password",
+    "enrolledCourses",
+    "role",
+    "updatedAt",
+    "createdAt",
+  ];
+
+  fieldsToRemove.forEach((field) => {
+    delete userWithoutSensitiveInfo[field];
+  });
+
   return res
     .status(200)
     .cookie("token", token, {
@@ -15,5 +29,6 @@ export const generateToken = (res, user, message) => {
     .json({
       success: true,
       message,
+      user: userWithoutSensitiveInfo,
     });
 };
