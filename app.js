@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./config/connection.js";
 import userRoutes from "./routes/user.route.js";
+import courseRoutes from "./routes/course.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -23,6 +24,7 @@ app.use(
 );
 //apis
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/course", courseRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
